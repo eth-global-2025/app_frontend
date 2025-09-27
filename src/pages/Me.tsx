@@ -11,6 +11,7 @@ import { ThesisInfo } from "@/types";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
+import { ThesisCard } from "@/components/ThesisCard";
 
 export const Me = () => {
   const { theme } = useTheme();
@@ -41,10 +42,10 @@ export const Me = () => {
   // Use the useUserThesis hook to get purchased papers
   const purchasedPapers = allUserThesis;
 
-  const formatEthAmount = (weiAmount: string) => {
+  const formatEthAmount = (ethAmount: string) => {
     try {
-      const ethAmount = parseFloat(weiAmount) / Math.pow(10, 18);
-      return ethAmount.toFixed(4);
+      const amount = parseFloat(ethAmount);
+      return amount.toFixed(4);
     } catch {
       return "0.0000";
     }
@@ -53,6 +54,10 @@ export const Me = () => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Copied to clipboard");
+  };
+
+  const openOnEtherscan = (address: string) => {
+    window.open(`https://sepolia.etherscan.io/address/${address}`, '_blank');
   };
 
   const handleCardClick = (thesis: ThesisInfo) => {
@@ -106,10 +111,6 @@ export const Me = () => {
   const closeModal = () => {
     setShowDetailsModal(false);
     setSelectedThesis(null);
-  };
-
-  const openOnEtherscan = (address: string) => {
-    window.open(`https://sepolia.etherscan.io/address/${address}`, '_blank');
   };
 
   const handlePurchase = async (thesis: ThesisInfo) => {
@@ -314,150 +315,26 @@ export const Me = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {currentPapers.map((thesis, index) => (
-                    <div
+                    <ThesisCard
                       key={thesis.cid}
-                      onClick={() => handleCardClick(thesis)}
-                      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 cursor-pointer group"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
-                            <File className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                              {thesis.title}
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {activeTab === "my-papers" ? "Your Research Paper" : "Purchased Paper"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3 mb-4">
-                        <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
-                          <Hash className="w-4 h-4" />
-                          <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                            {thesis.cid.slice(0, 12)}...{thesis.cid.slice(-8)}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              copyToClipboard(thesis.cid);
-                            }}
-                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                          >
-                            Copy
-                          </button>
-                        </div>
-
-                        <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
-                          <User className="w-4 h-4" />
-                          <span>{thesis.author.slice(0, 6)}...{thesis.author.slice(-4)}</span>
-                        </div>
-
-                        <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
-                          <ExternalLink className="w-4 h-4" />
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openOnEtherscan(thesis.address);
-                            }}
-                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                          >
-                            View Contract
-                          </button>
-                        </div>
-                      </div>
-
-                      {thesis.description && (
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
-                          {thesis.description}
-                        </p>
-                      )}
-
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium text-green-600 dark:text-green-400">
-                          {formatEthAmount(thesis.costInNative)} ETH
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {thesis.author.toLowerCase() !== address?.toLowerCase() && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handlePurchase(thesis);
-                              }}
-                              disabled={isBuying || purchasingThesis === thesis.cid}
-                              className="px-3 py-1 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
-                            >
-                              {purchasingThesis === thesis.cid ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                  <span>Buying...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <ShoppingCart className="w-3 h-3" />
-                                  <span>Buy</span>
-                                </>
-                              )}
-                            </button>
-                          )}
-                          <div className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            Click to view details
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      thesis={thesis}
+                      currentUserAddress={address}
+                      purchasedThesisCids={purchasedPapers.map(t => t.cid)}
+                      onCardClick={handleCardClick}
+                      onPurchase={handlePurchase}
+                      onDownload={downloadFile}
+                      onViewContract={openOnEtherscan}
+                      isPurchasing={isBuying}
+                      purchasingThesisId={purchasingThesis}
+                      showBuyButton={activeTab === "purchased" ? false : true}
+                      cardType={activeTab === "my-papers" ? "my-paper" : "purchased"}
+                    />
                   ))}
                 </div>
               )}
             </>
           )}
 
-        {/* Stats */}
-        {!isAllThesisLoading && !isAllUserThesisLoading && (myPapers.length > 0 || purchasedPapers.length > 0) && (
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                    <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">My Papers</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{myPapers.length}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                    <ShoppingCart className="w-6 h-6 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Purchased</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{purchasedPapers.length}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                    <File className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Papers</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {myPapers.length + purchasedPapers.length}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Details Modal */}
           {showDetailsModal && selectedThesis && (

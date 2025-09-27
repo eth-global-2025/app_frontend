@@ -104,6 +104,16 @@ export const UploadPage = () => {
       return;
     }
 
+    if (thesisFormData.title.length > 100) {
+      toast.error("Title must be 100 characters or less");
+      return;
+    }
+
+    if (thesisFormData.description.length > 200) {
+      toast.error("Description must be 200 characters or less");
+      return;
+    }
+
     try {
       // Generate a random hex salt for the thesis (32 bytes = 64 hex characters)
       const salt = Array.from(crypto.getRandomValues(new Uint8Array(32)))
@@ -379,10 +389,28 @@ export const UploadPage = () => {
                   type="text"
                   value={thesisFormData.title}
                   onChange={(e) => setThesisFormData(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    thesisFormData.title.length > 100 
+                      ? 'border-red-500 dark:border-red-500' 
+                      : 'border-gray-300 dark:border-gray-600'
+                  }`}
                   placeholder="Enter thesis title"
                   maxLength={100}
                 />
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {thesisFormData.title.length > 100 ? 'Title too long' : 'Enter a descriptive title for your thesis'}
+                  </p>
+                  <span className={`text-xs ${
+                    thesisFormData.title.length > 100 
+                      ? 'text-red-500 dark:text-red-400' 
+                      : thesisFormData.title.length > 80 
+                        ? 'text-yellow-500 dark:text-yellow-400' 
+                        : 'text-gray-500 dark:text-gray-400'
+                  }`}>
+                    {thesisFormData.title.length}/100
+                  </span>
+                </div>
               </div>
               
               <div>
@@ -392,11 +420,29 @@ export const UploadPage = () => {
                 <textarea
                   value={thesisFormData.description}
                   onChange={(e) => setThesisFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    thesisFormData.description.length > 200 
+                      ? 'border-red-500 dark:border-red-500' 
+                      : 'border-gray-300 dark:border-gray-600'
+                  }`}
                   placeholder="Describe your research thesis"
                   rows={3}
-                  maxLength={500}
+                  maxLength={200}
                 />
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {thesisFormData.description.length > 200 ? 'Description too long' : 'Provide a brief description of your research'}
+                  </p>
+                  <span className={`text-xs ${
+                    thesisFormData.description.length > 200 
+                      ? 'text-red-500 dark:text-red-400' 
+                      : thesisFormData.description.length > 160 
+                        ? 'text-yellow-500 dark:text-yellow-400' 
+                        : 'text-gray-500 dark:text-gray-400'
+                  }`}>
+                    {thesisFormData.description.length}/200
+                  </span>
+                </div>
               </div>
               
               <div>
@@ -427,7 +473,7 @@ export const UploadPage = () => {
                 </button>
                 <button 
                   onClick={handleThesisSubmit}
-                  disabled={isAddingThesis || !isConnected || !thesisFormData.title.trim() || !thesisFormData.description.trim()}
+                  disabled={isAddingThesis || !isConnected || !thesisFormData.title.trim() || !thesisFormData.description.trim() || thesisFormData.title.length > 100 || thesisFormData.description.length > 200}
                   className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                 >
                   {isAddingThesis ? (
