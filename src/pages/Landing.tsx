@@ -2,22 +2,14 @@ import React from "react";
 import { CustomConnectButton } from "@/components/ConnectButton";
 import { useTheme } from "@/context/ThemeContext";
 import { GraduationCap, DollarSign, BookOpen, Users } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
 
 export const Landing = () => {
   const { theme } = useTheme();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <header className="px-6 py-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <GraduationCap className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ThesisHub</h1>
-          </div>
-          <CustomConnectButton />
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hero Section */}
       <main className="px-6 py-16">

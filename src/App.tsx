@@ -2,6 +2,8 @@ import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Landing } from "@/pages/Landing";
+import { Home } from "@/pages/Home";
+import { UploadPage } from "@/pages/Upload";
 import { NotFound } from "@/pages/NotFound";
 import { ThemeProvider } from "@/context/ThemeContext";
 
@@ -34,6 +36,8 @@ const App = () => (
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/upload" element={<UploadPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <Sonner position="top-right" />
