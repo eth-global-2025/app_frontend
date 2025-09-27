@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { CustomConnectButton } from "./ConnectButton";
 import { useTheme } from "@/context/ThemeContext";
-import { GraduationCap, Home, Upload } from "lucide-react";
+import { GraduationCap, Home, Upload, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Navbar = () => {
@@ -19,6 +19,11 @@ export const Navbar = () => {
       name: "Upload",
       path: "/upload",
       icon: Upload,
+    },
+    {
+      name: "Me",
+      path: "/me",
+      icon: User,
     },
   ];
 

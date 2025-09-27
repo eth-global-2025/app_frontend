@@ -1,6 +1,7 @@
-import lighthouse from '@lighthouse-web3/sdk'
-import { JsonRpcSigner } from 'ethers'
 import { WalletClient } from 'viem'
+import { ethers, JsonRpcSigner } from 'ethers'
+import lighthouse from '@lighthouse-web3/sdk'
+import kavach from "@lighthouse-web3/kavach"
 
 export type PaperMeta = {
     cid: string
@@ -14,6 +15,15 @@ export type UploadResult = {
   cid: string
   name: string
   size: string
+}
+
+export async function signAuthMessageWithPrivateKey() {
+  const signer = new ethers.Wallet(import.meta.env.VITE_PRIVATE_KEY)
+
+  const authMessage = await kavach.getAuthMessage(signer.address)
+  const signedMessage = await signer.signMessage(authMessage.message)
+  // const { JWT, error } = await kavach.getJWT(signer.address, signedMessage)
+  return({signedMessage, signerAddress: signer.address})
 }
 
 export async function signAuthMessageWith(signer: JsonRpcSigner | WalletClient) {
@@ -45,7 +55,6 @@ export async function uploadEncryptedPdf(params: { file: File; signer: JsonRpcSi
   const { signerAddress, signature } = await signAuthMessageWith(signer)
   // SDK supports File | File[] for browser; omit progress callback for compatibility
   const out = await lighthouse.uploadEncrypted([file], import.meta.env.VITE_LIGHTHOUSE_API_KEY, signerAddress, signature)
-  console.log('Lighthouse upload response:', out)
   
   const data: any = (out as any)?.data ?? out
   let list: any[]
@@ -59,7 +68,6 @@ export async function uploadEncryptedPdf(params: { file: File; signer: JsonRpcSi
   
   const results = list.map((d) => {
     const hash = d.Hash || d.hash || d.cid
-    console.log('Extracted hash (CID):', hash)
     return {
       cid: hash,
       name: d.Name || d.name || file.name,
@@ -67,7 +75,6 @@ export async function uploadEncryptedPdf(params: { file: File; signer: JsonRpcSi
     } as UploadResult
   })
   
-  console.log('Returning upload results:', results)
   return results
 }
 
@@ -109,7 +116,6 @@ export async function listUploadsViaApiKey(): Promise<PaperMeta[]> {
   // Some SDK versions expose getUploads(apiKey, lastKey?)
   // @ts-ignore
   const res = await lighthouse.getUploads(import.meta.env.VITE_LIGHTHOUSE_API_KEY, null)
-  console.log('Lighthouse getUploads response:', res)
   const fileList: any[] = res?.data?.fileList || []
   return fileList
     .map((f) => ({
@@ -119,4 +125,37 @@ export async function listUploadsViaApiKey(): Promise<PaperMeta[]> {
       priceEth: '0.01',
       owner: f.publicKey || f.owner || ''
     } as PaperMeta))
+}
+
+export async function shareFile(cid: string, address: string) {
+  const {signedMessage, signerAddress} = await signAuthMessageWithPrivateKey()
+  const res = await lighthouse.shareFile(signerAddress, [address], cid, signedMessage)
+  return res
+}
+
+export async function imposeAccessConditions(cid: string, tokenAddress: string) {
+  const { signedMessage, signerAddress } = await signAuthMessageWithPrivateKey()
+
+  // Conditions to add
+  const conditions = [
+    {
+      id: 1,
+      chain: "Sepolia",
+      method: "balanceOf",
+      standardContractType: "ERC20",
+      contractAddress: tokenAddress,
+      returnValueTest: {
+        comparator: ">",
+        value: "0"
+      },
+      parameters: [":userAddress"],
+      inputArrayType: [],
+      outputType: "uint256"
+    },
+  ]
+
+  const aggregator = "([1])"
+
+  const res = await lighthouse.applyAccessCondition(signerAddress, cid, signedMessage, conditions, aggregator)
+  return res
 }

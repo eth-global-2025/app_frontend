@@ -5,6 +5,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import { useAccount, useWalletClient } from "wagmi";
 import { uploadEncryptedPdf, UploadResult } from "@/services/lighthouse";
+import { useAddThesis } from "@/services/contractService";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 
@@ -16,13 +17,26 @@ interface UploadedFile {
   lighthouseResult?: UploadResult;
 }
 
+interface ThesisFormData {
+  title: string;
+  description: string;
+  costInNative: string;
+}
+
 export const UploadPage = () => {
   const { theme } = useTheme();
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
+  const { addThesis, isPending: isAddingThesis, isConfirmed: isThesisConfirmed, isError: isThesisError, hash } = useAddThesis();
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
   const [isCreatingAsset, setIsCreatingAsset] = useState(false);
+  const [thesisFormData, setThesisFormData] = useState<ThesisFormData>({
+    title: "",
+    description: "",
+    costInNative: "0"
+  });
+  const [showThesisForm, setShowThesisForm] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -71,7 +85,67 @@ export const UploadPage = () => {
 
   const removeFile = () => {
     setUploadedFile(null);
+    setShowThesisForm(false);
+    setThesisFormData({
+      title: "",
+      description: "",
+      costInNative: "0"
+    });
   };
+
+  const handleThesisSubmit = async () => {
+    if (!uploadedFile?.lighthouseResult || !address) {
+      toast.error("Missing required data");
+      return;
+    }
+
+    if (!thesisFormData.title.trim() || !thesisFormData.description.trim()) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      // Generate a random hex salt for the thesis (32 bytes = 64 hex characters)
+      const salt = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+      
+      toast.loading("Creating thesis on blockchain...", { id: "add-thesis" });
+      
+      await addThesis({
+        salt,
+        title: thesisFormData.title,
+        cid: uploadedFile.lighthouseResult.cid,
+        author: address,
+        description: thesisFormData.description,
+        costInNative: thesisFormData.costInNative
+      });
+
+      // The transaction has been submitted, toast will be updated when confirmed
+    } catch (error) {
+      console.error("Error adding thesis:", error);
+      toast.error("Failed to create thesis on blockchain", { 
+        id: "add-thesis",
+        description: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  };
+
+  // Handle blockchain transaction state changes
+  React.useEffect(() => {
+    if (isThesisConfirmed) {
+      toast.success("Thesis created successfully on blockchain!", { 
+        id: "add-thesis",
+        description: `Transaction hash: ${hash?.slice(0, 10)}...` 
+      });
+      setShowThesisForm(false);
+    } else if (isThesisError) {
+      toast.error("Failed to create thesis on blockchain", { 
+        id: "add-thesis",
+        description: "Please try again" 
+      });
+    }
+  }, [isThesisConfirmed, isThesisError, hash]);
 
   const createAsset = async () => {
     if (!uploadedFile || !walletClient || !isConnected) {
@@ -101,9 +175,18 @@ export const UploadPage = () => {
           lighthouseResult: uploadResult
         } : null);
 
-        toast.success("Asset created successfully!", { 
+        // Pre-fill title with filename (without extension)
+        const fileName = uploadedFile.file.name;
+        const titleWithoutExt = fileName.replace(/\.[^/.]+$/, "");
+        setThesisFormData(prev => ({
+          ...prev,
+          title: titleWithoutExt
+        }));
+
+        setShowThesisForm(true);
+        toast.success("File uploaded to IPFS successfully!", { 
           id: "create-asset",
-          description: `File uploaded to IPFS with CID: ${uploadResult.cid}` 
+          description: `CID: ${uploadResult.cid}. Please fill in the thesis details below.` 
         });
       } else {
         throw new Error("No upload result received");
@@ -253,7 +336,7 @@ export const UploadPage = () => {
         </div>
 
         {/* Action Buttons */}
-        {uploadedFile && uploadedFile.status === "success" && (
+        {uploadedFile && uploadedFile.status === "success" && !uploadedFile.lighthouseResult && (
           <div className="mt-8 flex justify-end space-x-4">
             <button 
               onClick={removeFile}
@@ -281,18 +364,130 @@ export const UploadPage = () => {
           </div>
         )}
 
-        {/* Asset Created Success Message */}
+        {/* Thesis Form */}
+        {showThesisForm && uploadedFile?.lighthouseResult && (
+          <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Create Thesis on Blockchain
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  value={thesisFormData.title}
+                  onChange={(e) => setThesisFormData(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter thesis title"
+                  maxLength={100}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Description *
+                </label>
+                <textarea
+                  value={thesisFormData.description}
+                  onChange={(e) => setThesisFormData(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Describe your research thesis"
+                  rows={3}
+                  maxLength={500}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Cost (ETH)
+                </label>
+                <input
+                  type="number"
+                  step="0.001"
+                  min="0"
+                  value={thesisFormData.costInNative}
+                  onChange={(e) => setThesisFormData(prev => ({ ...prev, costInNative: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0.0"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Set to 0 for free access
+                </p>
+              </div>
+              
+              <div className="flex justify-end space-x-4 pt-4">
+                <button 
+                  onClick={removeFile}
+                  disabled={isAddingThesis}
+                  className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleThesisSubmit}
+                  disabled={isAddingThesis || !isConnected || !thesisFormData.title.trim() || !thesisFormData.description.trim()}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  {isAddingThesis ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Creating Thesis...</span>
+                    </>
+                  ) : (
+                    <span>
+                      {!isConnected ? "Connect Wallet to Create Thesis" : "Create Thesis on Blockchain"}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Upload Status Messages */}
         {uploadedFile?.lighthouseResult && (
-          <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <div className="flex items-center space-x-2 text-green-800 dark:text-green-200">
-              <CheckCircle className="w-5 h-5" />
-              <span className="font-medium">Asset Created Successfully!</span>
+          <div className="mt-6 space-y-4">
+            {/* IPFS Upload Success */}
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <div className="flex items-center space-x-2 text-green-800 dark:text-green-200">
+                <CheckCircle className="w-5 h-5" />
+                <span className="font-medium">File Uploaded to IPFS Successfully!</span>
+              </div>
+              <div className="mt-2 text-sm text-green-700 dark:text-green-300">
+                <p><strong>IPFS CID:</strong> {uploadedFile.lighthouseResult.cid}</p>
+                <p><strong>File Name:</strong> {uploadedFile.lighthouseResult.name}</p>
+                <p><strong>Size:</strong> {uploadedFile.lighthouseResult.size}</p>
+              </div>
             </div>
-            <div className="mt-2 text-sm text-green-700 dark:text-green-300">
-              <p><strong>IPFS CID:</strong> {uploadedFile.lighthouseResult.cid}</p>
-              <p><strong>File Name:</strong> {uploadedFile.lighthouseResult.name}</p>
-              <p><strong>Size:</strong> {uploadedFile.lighthouseResult.size}</p>
-            </div>
+
+            {/* Blockchain Transaction Status */}
+            {isAddingThesis && (
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-center space-x-2 text-blue-800 dark:text-blue-200">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="font-medium">Creating Thesis on Blockchain...</span>
+                </div>
+                <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                  <p>Transaction submitted. Waiting for confirmation...</p>
+                  {hash && <p><strong>Transaction Hash:</strong> {hash}</p>}
+                </div>
+              </div>
+            )}
+
+            {isThesisConfirmed && (
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div className="flex items-center space-x-2 text-green-800 dark:text-green-200">
+                  <CheckCircle className="w-5 h-5" />
+                  <span className="font-medium">Thesis Created on Blockchain Successfully!</span>
+                </div>
+                <div className="mt-2 text-sm text-green-700 dark:text-green-300">
+                  <p><strong>Transaction Hash:</strong> {hash}</p>
+                  <p>Your thesis is now available on the blockchain!</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
         </div>

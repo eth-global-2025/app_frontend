@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Landing } from "@/pages/Landing";
 import { Home } from "@/pages/Home";
 import { UploadPage } from "@/pages/Upload";
+import { Me } from "@/pages/Me";
 import { NotFound } from "@/pages/NotFound";
 import { ThemeProvider } from "@/context/ThemeContext";
 
@@ -38,6 +39,7 @@ const App = () => (
                 <Route path="/" element={<Landing />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/upload" element={<UploadPage />} />
+                <Route path="/me" element={<Me />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <Sonner position="top-right" />
