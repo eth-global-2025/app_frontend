@@ -11,28 +11,18 @@ const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>("light");
-  // Initialize theme from localStorage or system preference
+  // Initialize theme - always use light theme
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as Theme;
-    
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-      document.documentElement.classList.add("dark");
-      // Update favicon for dark mode
-      const favicon = document.getElementById("favicon") as HTMLLinkElement;
-      if (favicon) {
-        favicon.href = "/exLight.png";
-      }
-    }
+    setTheme("light");
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("theme", "light");
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
+    // Theme toggle disabled - keeping light theme only
+    const newTheme = "light";
     setTheme(newTheme);
-    document.documentElement.classList.toggle("dark");
+    document.documentElement.classList.remove("dark");
     localStorage.setItem("theme", newTheme);
   };
 
