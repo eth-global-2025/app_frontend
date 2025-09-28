@@ -44,7 +44,7 @@ export const generateFileDescription = async (file: File): Promise<string> => {
     fileContent = `File: ${fileName}`;
   }
 
-  const prompt = `Analyze the following file and generate a concise, accurate description of its content. The description should be between 200-300 characters and should focus on the main topic, purpose, or content of the file. Be factual and avoid speculation.
+  const prompt = `Analyze the following file and generate a concise, accurate description of its content. The description should be strictly less than 200 characters and should focus on the main topic, purpose, or content of the file. Be factual and avoid speculation.
 
 File name: ${fileName}
 File type: ${fileType}
