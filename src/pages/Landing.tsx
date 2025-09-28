@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { CustomConnectButton } from "@/components/ConnectButton";
 import { useTheme } from "@/context/ThemeContext";
 import { GraduationCap, DollarSign, BookOpen, Users } from "lucide-react";
@@ -8,7 +9,7 @@ export const Landing = () => {
   const { theme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
       <Navbar />
 
       {/* Hero Section */}
@@ -23,17 +24,20 @@ export const Landing = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <button className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+            <Link 
+              to="/home"
+              className="px-8 py-3 bg-blue-600/90 backdrop-blur-sm text-white rounded-xl hover:bg-blue-700/90 transition-all duration-300 font-semibold text-center shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40 border border-blue-500/20"
+            >
               Get Started
-            </button>
-            <button className="px-8 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-semibold">
+            </Link>
+            <button className="px-8 py-3 border border-white/30 dark:border-gray-600/50 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-white/20 dark:hover:bg-gray-700/50 backdrop-blur-sm transition-all duration-300 font-semibold shadow-lg shadow-gray-500/10 hover:shadow-xl hover:shadow-gray-500/20">
               Learn More
             </button>
           </div>
 
           {/* Features Grid */}
           <div className="grid md:grid-cols-3 gap-8 mt-16">
-            <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+            <div className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-xl shadow-blue-500/10 border border-white/20 dark:border-gray-700/50 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300">
               <BookOpen className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 Create Assets
@@ -43,7 +47,7 @@ export const Landing = () => {
               </p>
             </div>
 
-            <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+            <div className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-xl shadow-green-500/10 border border-white/20 dark:border-gray-700/50 hover:shadow-2xl hover:shadow-green-500/20 transition-all duration-300">
               <DollarSign className="w-12 h-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 Earn Revenue
@@ -53,7 +57,7 @@ export const Landing = () => {
               </p>
             </div>
 
-            <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+            <div className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-xl shadow-purple-500/10 border border-white/20 dark:border-gray-700/50 hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300">
               <Users className="w-12 h-12 text-purple-600 dark:text-purple-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 Connect Network

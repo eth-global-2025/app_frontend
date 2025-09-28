@@ -195,27 +195,19 @@ export const Me = () => {
   const isLoading = activeTab === "my-papers" ? isAllThesisLoading : isAllUserThesisLoading;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
       <Navbar />
       <div className="py-8">
         <div className="max-w-7xl mx-auto px-6">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  My Research Hub
-                </h1>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Manage your research papers and track your purchases
-                </p>
-              </div>
-              <Link
-                to="/upload"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Upload New Paper
-              </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                My Research Hub
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300">
+                Manage your research papers and track your purchases
+              </p>
             </div>
           </div>
 
@@ -377,12 +369,12 @@ export const Me = () => {
                     
                     <div className="flex items-center space-x-2">
                       <Hash className="w-4 h-4" />
-                      <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                      <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded truncate max-w-xs">
                         {selectedThesis.cid}
                       </span>
                       <button
                         onClick={() => copyToClipboard(selectedThesis.cid)}
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors flex-shrink-0"
                       >
                         Copy
                       </button>

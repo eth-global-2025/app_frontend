@@ -37,7 +37,7 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
+    <nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-white/20 dark:border-gray-700/50 sticky top-0 z-40 shadow-lg shadow-blue-500/5">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -49,20 +49,22 @@ export const Navbar = () => {
           </Link>
 
           {/* Search Bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <form onSubmit={handleSearch} className="w-full">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          {location.pathname !== "/" && (
+            <div className="hidden md:flex flex-1 max-w-md mx-8">
+              <form onSubmit={handleSearch} className="w-full">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search theses..."
+                  placeholder="Search thesis..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border-0 rounded-lg bg-blue-50/80 dark:bg-blue-900/30 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-600/70 dark:placeholder-gray-400/70 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400/70 focus:bg-gray-100/90 dark:focus:bg-gray-800/50 transition-all duration-300"
                 />
-              </div>
-            </form>
-          </div>
+                </div>
+              </form>
+            </div>
+          )}
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-1">
@@ -91,12 +93,14 @@ export const Navbar = () => {
           {/* Connect Wallet Button and Mobile Search */}
           <div className="flex items-center space-x-4">
             {/* Mobile Search Icon */}
-            <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <Search className="w-5 h-5" />
-            </button>
+            {location.pathname !== "/" && (
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -115,17 +119,17 @@ export const Navbar = () => {
         </div>
 
         {/* Mobile Search Bar */}
-        {isSearchOpen && (
+        {isSearchOpen && location.pathname !== "/" && (
           <div className="md:hidden border-t border-gray-200 dark:border-gray-700 py-4">
             <form onSubmit={handleSearch}>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search theses..."
+                  placeholder="Search thesis..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border-0 rounded-lg bg-blue-50/80 dark:bg-blue-900/30 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-600/70 dark:placeholder-gray-400/70 focus:ring-2 focus:ring-blue-500/50 focus:border-gray-400/70 focus:bg-blue-100/90 dark:focus:bg-gray-800/50 transition-all duration-300"
                 />
               </div>
             </form>

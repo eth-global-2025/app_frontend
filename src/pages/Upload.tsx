@@ -249,7 +249,7 @@ export const UploadPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
       <Navbar />
       <div className="py-8">
         <div className="max-w-4xl mx-auto px-6">
@@ -267,13 +267,13 @@ export const UploadPage = () => {
         <div
           {...getRootProps()}
           className={cn(
-            "border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-200",
+            "border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-300 backdrop-blur-md",
             isDragActive && !isDragReject
-              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+              ? "border-blue-500/50 bg-blue-500/20 dark:bg-blue-400/20"
               : isDragReject
-              ? "border-red-500 bg-red-50 dark:bg-red-900/20"
-              : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500",
-            "bg-white dark:bg-gray-800"
+              ? "border-red-500/50 bg-red-500/20 dark:bg-red-400/20"
+              : "border-white/30 dark:border-gray-600/50 hover:border-blue-400/50 dark:hover:border-blue-500/50",
+            "bg-white/80 dark:bg-gray-800/80 shadow-lg shadow-blue-500/10"
           )}
         >
           <input {...getInputProps()} />
@@ -404,7 +404,7 @@ export const UploadPage = () => {
 
         {/* Thesis Form */}
         {showThesisForm && uploadedFile?.lighthouseResult && (
-          <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="mt-8 p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/10">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               Create Thesis on Blockchain
             </h3>
