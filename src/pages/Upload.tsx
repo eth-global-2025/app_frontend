@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useAccount, useWalletClient } from "wagmi";
 import { uploadEncryptedPdf, UploadResult } from "@/services/lighthouse";
 import { useAddThesis } from "@/services/contractService";
+import { generateFileDescription } from "@/services/AsiOne";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 
@@ -31,6 +32,7 @@ export const UploadPage = () => {
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
   const [isCreatingAsset, setIsCreatingAsset] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [thesisFormData, setThesisFormData] = useState<ThesisFormData>({
     title: "",
     description: "",
@@ -196,8 +198,34 @@ export const UploadPage = () => {
         setShowThesisForm(true);
         toast.success("File uploaded to IPFS successfully!", { 
           id: "create-asset",
-          description: `CID: ${uploadResult.cid}. Please fill in the thesis details below.` 
+          description: `CID: ${uploadResult.cid}. Generating description...` 
         });
+
+        // Generate description using AI
+        setIsGeneratingDescription(true);
+        try {
+          const generatedDescription = await generateFileDescription(uploadedFile.file);
+          setThesisFormData(prev => ({
+            ...prev,
+            description: generatedDescription
+          }));
+          toast.success("Description generated successfully!", { 
+            id: "description-generated",
+            description: "AI-generated description based on file content" 
+          });
+        } catch (error) {
+          console.error("Error generating description:", error);
+          toast.error("Failed to generate description", { 
+            id: "description-error",
+            description: "Using fallback description" 
+          });
+          setThesisFormData(prev => ({
+            ...prev,
+            description: `Research document: ${titleWithoutExt}`
+          }));
+        } finally {
+          setIsGeneratingDescription(false);
+        }
       } else {
         throw new Error("No upload result received");
       }
@@ -415,23 +443,32 @@ export const UploadPage = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Description *
+                  Description * {isGeneratingDescription && (
+                    <span className="text-blue-600 dark:text-blue-400 text-xs ml-2">
+                      <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
+                      Generating...
+                    </span>
+                  )}
                 </label>
                 <textarea
                   value={thesisFormData.description}
-                  onChange={(e) => setThesisFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    thesisFormData.description.length > 200 
-                      ? 'border-red-500 dark:border-red-500' 
+                  onChange={() => {}} // Disabled - no user input allowed
+                  className={`w-full px-3 py-2 border rounded-lg bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white cursor-not-allowed ${
+                    isGeneratingDescription 
+                      ? 'border-blue-300 dark:border-blue-600' 
                       : 'border-gray-300 dark:border-gray-600'
                   }`}
-                  placeholder="Describe your research thesis"
+                  placeholder={isGeneratingDescription ? "Generating description from file content..." : "AI-generated description based on your file"}
                   rows={3}
-                  maxLength={200}
+                  readOnly
+                  disabled
                 />
                 <div className="flex justify-between items-center mt-1">
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {thesisFormData.description.length > 200 ? 'Description too long' : 'Provide a brief description of your research'}
+                    {isGeneratingDescription 
+                      ? 'AI is analyzing your file to generate an accurate description'
+                      : 'Description is auto-generated from your file content to ensure accuracy'
+                    }
                   </p>
                   <span className={`text-xs ${
                     thesisFormData.description.length > 200 
@@ -473,13 +510,18 @@ export const UploadPage = () => {
                 </button>
                 <button 
                   onClick={handleThesisSubmit}
-                  disabled={isAddingThesis || !isConnected || !thesisFormData.title.trim() || !thesisFormData.description.trim() || thesisFormData.title.length > 100 || thesisFormData.description.length > 200}
+                  disabled={isAddingThesis || isGeneratingDescription || !isConnected || !thesisFormData.title.trim() || !thesisFormData.description.trim() || thesisFormData.title.length > 100 || thesisFormData.description.length > 200}
                   className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                 >
                   {isAddingThesis ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
                       <span>Creating Thesis...</span>
+                    </>
+                  ) : isGeneratingDescription ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Generating Description...</span>
                     </>
                   ) : (
                     <span>
