@@ -2,15 +2,16 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { CustomConnectButton } from "./ConnectButton";
 import { useTheme } from "@/context/ThemeContext";
+import { useSearch } from "@/context/SearchContext";
 import { GraduationCap, Home, Upload, User, Menu, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Navbar = () => {
   const { theme } = useTheme();
+  const { searchQuery, setSearchQuery } = useSearch();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const navItems = [
     {
@@ -32,8 +33,8 @@ export const Navbar = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement search functionality
-    console.log("Search query:", searchQuery);
+    // Search is handled by the search context and filtered in components
+    // This prevents page reload and allows real-time filtering
   };
 
   return (

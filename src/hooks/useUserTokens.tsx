@@ -15,13 +15,23 @@ export const useUserThesis = () => {
     abi: ThesisHubMaster.abi,
     functionName: "getUserTokenData",
     args: [address],
+    query: {
+      enabled: !!address, // Only run the query if address exists
+    },
   });
 
   useEffect(() => {
-    if (!isAllUserThesisInfoLoading && !isAllThesisLoading && allThesis.length > 0 && allUserThesisInfo) {
-      const userAssets = allThesis.filter((thesis) => allUserThesisInfo.some((userAsset) => userAsset.tokenAddress === thesis.address));
-      
-      if (userAssets) {
+    if (!address) {
+      // No address means no user data, set empty array and stop loading
+      setAllUserThesis([]);
+      setIsAllUserThesisLoading(false);
+      return;
+    }
+
+    if (!isAllUserThesisInfoLoading && !isAllThesisLoading) {
+      if (allUserThesisInfo && allUserThesisInfo.length > 0 && allThesis.length > 0) {
+        const userAssets = allThesis.filter((thesis) => allUserThesisInfo.some((userAsset) => userAsset.tokenAddress === thesis.address));
+        
         const convertedUserAssets: ThesisInfo[] = userAssets.map((thesis: any) => ({
           cid: thesis.cid,
           title: thesis.title,
@@ -31,12 +41,15 @@ export const useUserThesis = () => {
           costInNative: thesis.costInNative,
         }));
         setAllUserThesis(convertedUserAssets);
+      } else {
+        // User has no purchases or no thesis available
+        setAllUserThesis([]);
       }
       setIsAllUserThesisLoading(false);
     } else if (isAllUserThesisInfoLoading || isAllThesisLoading) {
       setIsAllUserThesisLoading(true);
     }
-  }, [isAllUserThesisInfoLoading, isAllThesisLoading, allThesis, allUserThesisInfo]);
+  }, [address, isAllUserThesisInfoLoading, isAllThesisLoading, allThesis, allUserThesisInfo]);
 
   const refetchUserThesis = () => {
     refetchTotalUserThesis();

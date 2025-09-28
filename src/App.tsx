@@ -7,6 +7,7 @@ import { UploadPage } from "@/pages/Upload";
 import { Me } from "@/pages/Me";
 import { NotFound } from "@/pages/NotFound";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { SearchProvider } from "@/context/SearchContext";
 
 import '@rainbow-me/rainbowkit/styles.css';
 
@@ -30,24 +31,26 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <ThemeProvider>
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
-          <TooltipProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/upload" element={<UploadPage />} />
-                <Route path="/me" element={<Me />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <Sonner position="top-right" />
-            </BrowserRouter>
-          </TooltipProvider>
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <SearchProvider>
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <RainbowKitProvider>
+            <TooltipProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/upload" element={<UploadPage />} />
+                  <Route path="/me" element={<Me />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Sonner position="top-right" />
+              </BrowserRouter>
+            </TooltipProvider>
+          </RainbowKitProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </SearchProvider>
   </ThemeProvider>
 );
 

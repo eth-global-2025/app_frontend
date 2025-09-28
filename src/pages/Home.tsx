@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAccount, useWalletClient } from "wagmi";
 import { File, Download, Calendar, User, Hash, X, ExternalLink, ShoppingCart } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import { useSearch } from "@/context/SearchContext";
 import { cn } from "@/lib/utils";
 import { listUploadsViaApiKey, PaperMeta } from "@/services/lighthouse";
 import { useAssets } from "@/hooks/useThesis";
@@ -16,6 +17,7 @@ import { ThesisCard } from "@/components/ThesisCard";
 
 export const Home = () => {
   const { theme } = useTheme();
+  const { searchQuery } = useSearch();
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
   const { allThesis, isAllThesisLoading, refetchThesis } = useAssets();
@@ -33,12 +35,12 @@ export const Home = () => {
     }
   }, [isConnected, refetchThesis]);
 
-  const formatEthAmount = (ethAmount: string) => {
+  const formatPyusdAmount = (pyusdAmount: string) => {
     try {
-      const amount = parseFloat(ethAmount);
-      return amount.toFixed(4);
+      const amount = parseFloat(pyusdAmount);
+      return amount.toFixed(6);
     } catch {
-      return "0.0000";
+      return "0.000000";
     }
   };
 
@@ -122,7 +124,7 @@ export const Home = () => {
 
     try {
       setPurchasingThesis(thesis.cid);
-      // Convert ETH string to wei BigInt
+      // Convert PYUSD string to wei BigInt
       const costInWei = BigInt(Math.floor(parseFloat(thesis.costInNative) * Math.pow(10, 18)));
       
       toast.loading("Processing purchase...", { id: "purchase" });
@@ -158,6 +160,17 @@ export const Home = () => {
       setPurchasingThesis(null);
     }
   }, [isPurchaseConfirmed, isPurchaseError, purchaseHash, purchasingThesis, refetchThesis]);
+
+  // Filter thesis based on search query
+  const filteredThesis = allThesis.filter((thesis) => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      thesis.title.toLowerCase().includes(query) ||
+      thesis.description.toLowerCase().includes(query)
+    );
+  });
 
   // Show content even when not connected, but disable wallet-dependent features
 
@@ -198,7 +211,7 @@ export const Home = () => {
                   No thesis assets found
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  No research papers have been uploaded to the blockchain yet
+                  No research papers have been uploaded to the ThesisHub yet
                 </p>
                 <Link
                   to="/upload"
@@ -207,9 +220,19 @@ export const Home = () => {
                   Upload First Thesis
                 </Link>
               </div>
+            ) : filteredThesis.length === 0 ? (
+              <div className="text-center py-12">
+                <File className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  No results found
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  No research papers match your search for "{searchQuery}"
+                </p>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {allThesis.map((thesis, index) => (
+                {filteredThesis.map((thesis, index) => (
                   <ThesisCard
                     key={thesis.cid}
                     thesis={thesis}
@@ -297,7 +320,7 @@ export const Home = () => {
                   
                   <div className="flex items-center space-x-2">
                     <span className="font-medium text-green-600 dark:text-green-400">
-                      Price: {formatEthAmount(selectedThesis.costInNative)} ETH
+                      Price: {formatPyusdAmount(selectedThesis.costInNative)} PYUSD
                     </span>
                   </div>
                 </div>

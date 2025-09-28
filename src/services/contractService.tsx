@@ -86,7 +86,7 @@ export const useAddThesis = () => {
     // Convert salt to bytes32 format (32 bytes, padded with zeros)
     const saltBytes32 = `0x${thesisData.salt.padStart(64, '0')}` as `0x${string}`;
     
-    // Convert ETH to wei (1 ETH = 10^18 wei)
+    // Convert PYUSD to wei (1 PYUSD = 10^18 wei)
     const costInWei = Math.floor(parseFloat(thesisData.costInNative) * Math.pow(10, 18));
 
     try {

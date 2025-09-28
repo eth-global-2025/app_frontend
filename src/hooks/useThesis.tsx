@@ -29,9 +29,9 @@ export const useAssets = () => {
           if (thesisInfos && Array.isArray(thesisInfos) && assetAddresses && Array.isArray(assetAddresses)) {
             // Map asset infos with their corresponding addresses
             const convertedTheses: ThesisInfo[] = thesisInfos.map((asset: any, index) => {
-              // Convert costInNativeInWei (BigInt) to ETH string
+              // Convert costInNativeInWei (BigInt) to PYUSD string
               const costInWei = asset.costInNativeInWei;
-              const costInEth = costInWei ? (Number(costInWei) / Math.pow(10, 18)).toString() : "0";
+              const costInPyusd = costInWei ? (Number(costInWei) / Math.pow(10, 18)).toString() : "0";
               
               return {
                 title: asset.title,
@@ -39,7 +39,7 @@ export const useAssets = () => {
                 address: assetAddresses[index] || '0x0000000000000000000000000000000000000000',
                 author: asset.author,
                 description: asset.description,
-                costInNative: costInEth,
+                costInNative: costInPyusd,
               };
             });
             

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAccount, useWalletClient } from "wagmi";
 import { File, Download, Calendar, User, Hash, X, ExternalLink, BookOpen, ShoppingCart } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import { useSearch } from "@/context/SearchContext";
 import { cn } from "@/lib/utils";
 import { useAssets } from "@/hooks/useThesis";
 import { useUserThesis } from "@/hooks/useUserTokens";
@@ -15,6 +16,7 @@ import { ThesisCard } from "@/components/ThesisCard";
 
 export const Me = () => {
   const { theme } = useTheme();
+  const { searchQuery } = useSearch();
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
   const { allThesis, isAllThesisLoading, refetchThesis } = useAssets();
@@ -42,12 +44,12 @@ export const Me = () => {
   // Use the useUserThesis hook to get purchased papers
   const purchasedPapers = allUserThesis;
 
-  const formatEthAmount = (ethAmount: string) => {
+  const formatPyusdAmount = (pyusdAmount: string) => {
     try {
-      const amount = parseFloat(ethAmount);
-      return amount.toFixed(4);
+      const amount = parseFloat(pyusdAmount);
+      return amount.toFixed(6);
     } catch {
-      return "0.0000";
+      return "0.000000";
     }
   };
 
@@ -131,7 +133,7 @@ export const Me = () => {
 
     try {
       setPurchasingThesis(thesis.cid);
-      // Convert ETH string to wei BigInt
+      // Convert PYUSD string to wei BigInt
       const costInWei = BigInt(Math.floor(parseFloat(thesis.costInNative) * Math.pow(10, 18)));
       
       toast.loading("Processing purchase...", { id: "purchase" });
@@ -193,6 +195,17 @@ export const Me = () => {
 
   const currentPapers = activeTab === "my-papers" ? myPapers : purchasedPapers;
   const isLoading = activeTab === "my-papers" ? isAllThesisLoading : isAllUserThesisLoading;
+
+  // Filter papers based on search query
+  const filteredPapers = currentPapers.filter((paper) => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      paper.title.toLowerCase().includes(query) ||
+      paper.description.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
@@ -304,9 +317,19 @@ export const Me = () => {
                     </Link>
                   )}
                 </div>
+              ) : filteredPapers.length === 0 ? (
+                <div className="text-center py-12">
+                  <File className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    No results found
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-6">
+                    No papers match your search for "{searchQuery}"
+                  </p>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {currentPapers.map((thesis, index) => (
+                  {filteredPapers.map((thesis, index) => (
                     <ThesisCard
                       key={thesis.cid}
                       thesis={thesis}
@@ -397,7 +420,7 @@ export const Me = () => {
                     
                     <div className="flex items-center space-x-2">
                       <span className="font-medium text-green-600 dark:text-green-400">
-                        Price: {formatEthAmount(selectedThesis.costInNative)} ETH
+                        Price: {formatPyusdAmount(selectedThesis.costInNative)} PYUSD
                       </span>
                     </div>
                   </div>

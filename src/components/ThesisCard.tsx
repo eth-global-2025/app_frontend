@@ -30,12 +30,12 @@ export const ThesisCard: React.FC<ThesisCardProps> = ({
   showBuyButton = true,
   cardType = "browse"
 }) => {
-  const formatEthAmount = (ethAmount: string) => {
+  const formatPyusdAmount = (pyusdAmount: string) => {
     try {
-      const amount = parseFloat(ethAmount);
-      return amount.toFixed(4);
+      const amount = parseFloat(pyusdAmount);
+      return amount.toFixed(6);
     } catch {
-      return "0.0000";
+      return "0.000000";
     }
   };
 
@@ -83,7 +83,7 @@ export const ThesisCard: React.FC<ThesisCardProps> = ({
 
       <div className="flex items-center justify-between">
         <div className="text-sm font-medium text-green-600 dark:text-green-400">
-          {formatEthAmount(thesis.costInNative)} ETH
+          {formatPyusdAmount(thesis.costInNative)} PYUSD
         </div>
         <div className="flex items-center space-x-2">
           {shouldShowBuyButton ? (
